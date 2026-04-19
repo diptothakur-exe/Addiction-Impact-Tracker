@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-low:      #166534;
+    --color-moderate: #92400e;
+    --color-high:     #9a3412;
+    --color-severe:   #7f1d1d;
+    --bg-low:         #dcfce7;
+    --bg-moderate:    #fef3c7;
+    --bg-high:        #ffedd5;
+    --bg-severe:      #fee2e2;
+  }
+  * { box-sizing: border-box; }
+  body { @apply bg-zinc-950 text-zinc-100 antialiased; }
+}
+
+@layer components {
+  .card {
+    @apply bg-zinc-900 border border-zinc-800 rounded-2xl p-5;
+  }
+  .input-field {
+    @apply w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3
+           text-zinc-100 placeholder-zinc-500 focus:outline-none
+           focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50
+           transition-all duration-150;
+  }
+  .btn-primary {
+    @apply w-full py-3.5 px-6 bg-red-600 hover:bg-red-500 active:bg-red-700
+           text-white font-semibold rounded-xl transition-all duration-150
+           focus:outline-none focus:ring-2 focus:ring-red-400/50;
+  }
+  .risk-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase;
+  }
+  .tab-btn {
+    @apply flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-150
+           border border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-600;
+  }
+  .tab-btn.active {
+    @apply bg-zinc-100 text-zinc-900 border-zinc-100;
+  }
+  .meter-fill {
+    @apply h-full rounded-full transition-all duration-700 ease-out;
+  }
+  .stat-card {
+    @apply bg-zinc-800/60 rounded-xl p-4 border border-zinc-700/50;
+  }
+  .part-bar {
+    @apply h-1.5 rounded-full transition-all duration-500;
+  }
+}
+
+@layer utilities {
+  .text-muted { @apply text-zinc-400; }
+  .divider    { @apply border-t border-zinc-800 my-5; }
+}

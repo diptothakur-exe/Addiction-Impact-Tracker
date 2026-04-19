@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{title}}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/tailwind.css" />
+</head>
+<body class="min-h-screen bg-zinc-950 flex items-start justify-center px-4 py-10">
+
+  <div class="w-full max-w-md">
+
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="inline-flex items-center gap-2 mb-4 px-3 py-1.5 bg-red-950/60 border border-red-900/50 rounded-full">
+        <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+        <span class="text-xs text-red-400 font-medium tracking-wide uppercase">Health Risk Estimator</span>
+      </div>
+      <h1 class="text-2xl font-semibold text-zinc-100 leading-tight">Addiction Impact<br/>Tracker</h1>
+      <p class="mt-2 text-sm text-zinc-500">Estimated assessment based on general data — not medical advice.</p>
+    </div>
+
+    <!-- Error -->
+    {{#if error}}
+    <div class="mb-4 px-4 py-3 bg-red-950/40 border border-red-800/50 rounded-xl text-sm text-red-400">
+      Invalid input. Please check your values and try again.
+    </div>
+    {{/if}}
+
+    <form action="/report" method="POST" class="space-y-5">
+
+      <!-- Addiction type -->
+      <div>
+        <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-2">Addiction type</label>
+        <div class="grid grid-cols-3 gap-2" id="type-tabs">
+          <button type="button" class="tab-btn active" data-type="cigarettes" onclick="selectType(this)">Cigarettes</button>
+          <button type="button" class="tab-btn" data-type="alcohol" onclick="selectType(this)">Alcohol</button>
+          <button type="button" class="tab-btn" data-type="porn" onclick="selectType(this)">Behavioral</button>
+        </div>
+        <input type="hidden" name="type" id="type-input" value="cigarettes" />
+      </div>
+
+      <!-- Intensity -->
+      <div class="card">
+        <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-3" id="int-label">
+          Cigarettes per day
+        </label>
+        <div class="flex items-center gap-3">
+          <input
+            type="range" id="int-slider" name="intensity"
+            min="0" max="40" step="1" value="10"
+            class="flex-1 accent-red-500 cursor-pointer"
+            oninput="document.getElementById('int-val').textContent=this.value"
+          />
+          <span class="text-xl font-semibold text-zinc-100 w-10 text-right" id="int-val">10</span>
+        </div>
+        <div class="flex justify-between text-xs text-zinc-600 mt-1">
+          <span>0</span><span id="int-max">40</span>
+        </div>
+      </div>
+
+      <!-- Duration -->
+      <div class="card">
+        <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-3">
+          Duration (years)
+        </label>
+        <div class="flex items-center gap-3">
+          <input
+            type="range" id="dur-slider" name="years"
+            min="0" max="30" step="1" value="5"
+            class="flex-1 accent-red-500 cursor-pointer"
+            oninput="document.getElementById('dur-val').textContent=this.value"
+          />
+          <span class="text-xl font-semibold text-zinc-100 w-10 text-right" id="dur-val">5</span>
+        </div>
+        <div class="flex justify-between text-xs text-zinc-600 mt-1">
+          <span>0 yrs</span><span>30 yrs</span>
+        </div>
+      </div>
+
+      <!-- Age -->
+      <div>
+        <label class="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-2">
+          Age <span class="normal-case text-zinc-600">(optional — affects risk weighting)</span>
+        </label>
+        <input
+          type="number" name="age" id="age-input"
+          placeholder="e.g. 28" min="10" max="100"
+          class="input-field"
+        />
+      </div>
+
+      <button type="submit" class="btn-primary mt-2">
+        Calculate risk →
+      </button>
+
+    </form>
+
+    <p class="text-center text-xs text-zinc-700 mt-6">
+      No data stored. No login required. Results are approximate.
+    </p>
+  </div>
+
+  <script>
+    const intConfigs = {
+      cigarettes: { label: 'Cigarettes per day',  max: 40,  default: 10 },
+      alcohol:    { label: 'Units per week',        max: 50,  default: 8  },
+      porn:       { label: 'Sessions per day',      max: 10,  default: 2  },
+    };
+
+    function selectType(el) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      const type = el.dataset.type;
+      document.getElementById('type-input').value = type;
+      const cfg = intConfigs[type];
+      document.getElementById('int-label').textContent = cfg.label;
+      const sl = document.getElementById('int-slider');
+      sl.max   = cfg.max;
+      sl.value = cfg.default;
+      document.getElementById('int-val').textContent  = cfg.default;
+      document.getElementById('int-max').textContent  = cfg.max;
+    }
+  </script>
+</body>
+</html>
