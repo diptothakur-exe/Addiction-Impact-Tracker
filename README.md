@@ -1,91 +1,85 @@
+<div align="center">
+
 # Addiction Impact Tracker
 
-Estimated health risk tracker for cigarettes, alcohol, and behavioral addiction (porn).
-No login. No database. Server-rendered with NestJS + Handlebars + Tailwind CSS.
+**An estimated health-risk model for cigarettes, alcohol, and behavioral addiction - no login, no database, no tracking.**
 
-## Stack
+[Live Demo](https://habitrisk.vercel.app/)
 
-- **NestJS** — HTTP server, routing, DI
-- **Handlebars (hbs)** — server-rendered HTML views
-- **Tailwind CSS** — utility-first styling
-- **Chart.js** (CDN) — projection line chart
-- **No database** — stateless, MVP
+</div>
 
-## Quick start
+---
 
-```bash
-npm install
+## Goal
 
-# Build Tailwind CSS (one-time or watch)
-npm run tailwind:build
-# or watch mode (separate terminal):
-npm run tailwind
+Most addiction-risk calculators either require an account or hide their logic behind a black box. This tool does neither. It's a stateless, server-rendered risk model: you enter your habit data, it computes a transparent score using a formula you can read yourself, and nothing is stored.
 
-# Development (hot reload)
-npm run start:dev
+The intent isn't diagnosis - it's giving someone a fast, honest, numeric reflection of where a habit currently sits, and where it's headed if nothing changes.
 
-# Production
-npm run build
-npm run start
-```
+---
 
-Visit → http://localhost:3000
+## Core Features
 
-## File structure
+**Multi-substance risk scoring**
+Separate weighted models for cigarettes, alcohol, and porn/behavioral addiction — each tuned to the variables that matter for that habit (frequency, duration, intensity).
 
-```
-src/
-  main.ts                        # Bootstrap, HBS setup, static assets
-  app.module.ts
+**Age-adjusted risk**
+Cigarette and alcohol scores apply an age multiplier (1.0× under 30, 1.05× 30–39, 1.15× 40+), reflecting cumulative physiological risk.
 
-  modules/report/
-    report.controller.ts         # GET / → index.hbs | POST /report → report.hbs
-    report.service.ts            # Orchestrates scoring + projection
-    report.module.ts
-    dto/input.dto.ts             # Validation (class-validator)
+**Future projection**
+A Chart.js line chart projects two paths forward from the current score: continuing the habit unchanged, versus quitting/recovering — giving the number a trajectory instead of a single static value.
 
-  common/
-    utils/
-      scoring.util.ts            # Score formulas: cigarettes / alcohol / porn
-      projection.util.ts         # Future continue + quit/recovery curves
-      constants.ts               # Risk ranges, affected parts, costs
-    types/index.ts               # Shared TypeScript types
+**Zero data retention**
+No database, no accounts, no cookies of consequence. Every request is computed and rendered fresh; nothing about the user persists after the response.
 
-  views/
-    index.hbs                    # Input form
-    report.hbs                   # Risk report
+**Instant, server-rendered report**
+Form submission returns a fully rendered risk report — no client-side hydration delay, no loading spinners for the result itself.
 
-  styles/tailwind.css            # Tailwind source (compiled → public/css/)
+---
 
-public/
-  css/tailwind.css               # Compiled Tailwind output
-  js/app.js                      # Optional client-side animation helpers
-```
+## Risk Model (Spec)
 
-## Routes
-
-| Method | Path      | Description                          |
-|--------|-----------|--------------------------------------|
-| GET    | `/`       | Input form                           |
-| POST   | `/report` | Process input → render risk report   |
-
-## Scoring logic
-
-All formulas are in `src/common/utils/scoring.util.ts`.
+Each substance is scored 0–100 via a weighted composite of normalized inputs, then bucketed into a risk band.
 
 ```
 clamp(x, 0, 100)
-norm(x, max) = min(x/max, 1)
-ageFactor = age>=40 ? 1.15 : age>=30 ? 1.05 : 1.0
+norm(x, max) = min(x / max, 1)
+ageFactor     = age ≥ 40 ? 1.15 : age ≥ 30 ? 1.05 : 1.0
 
-Cigarettes: (40*norm(sticks,30) + 40*norm(sticks*years,300) + 20*norm(years,20)) * ageFactor
-Alcohol:    (45*norm(units,35)  + 35*norm(units*years,350)  + 20*norm(years,15))  * ageFactor
-Porn:        50*norm(sessions,5) + 30*norm(sessions*years,50) + 20*norm(years,10)
+Cigarettes  = (40·norm(sticks,30) + 40·norm(sticks·years,300) + 20·norm(years,20)) × ageFactor
+Alcohol     = (45·norm(units,35)  + 35·norm(units·years,350)  + 20·norm(years,15))  × ageFactor
+Porn        =  50·norm(sessions,5) + 30·norm(sessions·years,50) + 20·norm(years,10)
 ```
 
-Risk levels: 0–25 LOW | 26–50 MODERATE | 51–75 HIGH | 76–100 SEVERE
+| Band | Range |
+|---|---|
+| Low | 0–25 |
+| Moderate | 26–50 |
+| High | 51–75 |
+| Severe | 76–100 |
+
+Each formula blends current intensity, cumulative exposure (intensity × years), and duration alone — so a short but heavy habit and a long but light one can land in the same band for different reasons, which the report surfaces rather than hides.
+
+---
+
+## System Design
+
+| Property | Choice | Why |
+|---|---|---|
+| Rendering | Server-side (NestJS + Handlebars) | Report appears instantly, no client JS required for the core flow |
+| State | None — fully stateless | Nothing to secure, nothing to leak, nothing to migrate |
+| Styling | Tailwind CSS | Fast iteration, small compiled output |
+| Visualization | Chart.js (CDN) | Lightweight projection chart without a bundler dependency |
+| Validation | class-validator DTOs | Rejects malformed input before it reaches scoring logic |
+
+---
+
+## Scope & Limits
+
+- Estimates only — not a diagnostic or medical tool
+- Not personalized beyond the inputs provided (no history, no adaptive model)
+- Three habit types by design, not a general-purpose addiction platform
 
 ## Disclaimer
 
-This tool provides **estimated** assessments based on general population data.
-It is **not** medical advice. Consult a qualified healthcare professional.
+This tool produces **estimated** assessments based on general population data. It is **not** medical advice. Consult a qualified healthcare professional for any health or addiction concern.
